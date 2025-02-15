@@ -1,5 +1,16 @@
 # HolbertonSchool-hbnb
 
+Uses: https://www.mermaidchart.com/play to generate the pngs for the mermaid diagrams
+under ./mermaid/*.mmd
+
+### How to contribute
+
+Use the live mermaid.js editor to write the needed code, copy that code under
+the mermaid repository on a file that matches the naming of the diagram (ex: package-diagram.mmd)
+using the .mmd extension.
+
+Then, export the image on the playground as a png file and add it on the root level of this repo.
+
 ### Explanation:
 
 #### Presentation Layer:

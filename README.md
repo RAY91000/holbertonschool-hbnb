@@ -11,6 +11,19 @@ using the .mmd extension.
 
 Then, export the image on the playground as a png file and add it on the root level of this repo.
 
+Add this on top of the mmd file to keep style coherence:
+```
+---
+config:
+  theme: default
+  themeVariables:
+    primaryColor: '#ffcc00'
+    edgeLabelBackground: '#ffffff'
+    tertiaryColor: '#ffffff'
+  look: handDrawn
+---
+```
+
 ### Explanation:
 
 #### Presentation Layer:

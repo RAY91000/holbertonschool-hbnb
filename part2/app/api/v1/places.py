@@ -16,6 +16,15 @@ user_model = api.model('PlaceUser', {
     'email': fields.String(description='Owner\'s email')
 })
 
+# new review model
+review_model = api.model('PlaceReview', {
+    'id': fields.String(description='Review ID'),
+    'text': fields.String(description='Text of the review'),
+    'rating': fields.Integer(description='Rating of the place (1-5)'),
+    'user_id': fields.String(description='ID of the user')
+})
+
+# update of place modele for including reviews
 place_model = api.model('Place', {
     'title': fields.String(required=True, description='Place title'),
     'description': fields.String(description='Place description'),
@@ -23,7 +32,8 @@ place_model = api.model('Place', {
     'latitude': fields.Float(required=True, description='Latitude'),
     'longitude': fields.Float(required=True, description='Longitude'),
     'owner_id': fields.String(required=True, description='Owner ID'),
-    'amenities': fields.List(fields.String, required=True, description="Amenities IDs")
+    'amenities': fields.List(fields.String, required=True, description="Amenities IDs"),
+    'reviews': fields.List(fields.Nested(review_model), description="List of reviews")  # Ajout des reviews
 })
 
 facade = HBnBFacade()
@@ -34,6 +44,7 @@ class PlaceList(Resource):
     @api.response(201, 'Place created')
     @api.response(400, 'Invalid data')
     def post(self):
+        """Create a new place"""
         place_data = api.payload
         if not place_data:
             return {'message': 'Invalid data'}, 400
@@ -42,6 +53,7 @@ class PlaceList(Resource):
 
     @api.response(200, 'Places list')
     def get(self):
+        """Retrieve all places"""
         places = facade.get_all_places()
         return [{'id': place.id, 'title': place.title, 'latitude': place.latitude, 'longitude': place.longitude} for place in places], 200
 
@@ -50,14 +62,29 @@ class PlaceResource(Resource):
     @api.response(200, 'Place details')
     @api.response(404, 'Place not found')
     def get(self, place_id):
+        """Retrieve a place's details, including its reviews"""
         place = facade.get_place(place_id)
         if not place:
             return {'message': 'Not found'}, 404
-        return place.to_dict(), 200
+        
+        # retieve reviews associated with the location
+        reviews = facade.get_reviews_by_place(place_id)
+        place_data = place.to_dict()
+        place_data['reviews'] = [
+            {
+                'id': review.id,
+                'text': review.text,
+                'rating': review.rating,
+                'user_id': review.user_id
+            }
+            for review in reviews
+        ]
+        return place_data, 200
 
     @api.response(200, 'Place deleted')
     @api.response(404, 'Place not found')
     def delete(self, place_id):
+        """Delete a place"""
         success = facade.delete_place(place_id)
         if success:
             return {'message': 'Deleted'}, 200
@@ -68,6 +95,7 @@ class PlaceResource(Resource):
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid data')
     def put(self, place_id):
+        """Update a place's information"""
         place_data = api.payload
         if not place_data:
             return {'message': 'Invalid data'}, 400
@@ -75,4 +103,4 @@ class PlaceResource(Resource):
         if not updated_place:
             return {'message': 'Not found'}, 404
         return updated_place.to_dict(), 200
-
+    

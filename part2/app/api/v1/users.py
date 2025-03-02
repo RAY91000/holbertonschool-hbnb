@@ -1,16 +1,13 @@
 from flask_restx import Namespace, Resource, fields
-from app.services.facade import HBnBFacade
+from app.services import facade
 
 api = Namespace('users', description='User operations')
-facade = HBnBFacade()
 
 # Define user model for input validation and documentation
 user_model = api.model('User', {
     'first_name': fields.String(required=True, description='First name of the user'),
     'last_name': fields.String(required=True, description='Last name of the user'),
-    'email': fields.String(required=True, description='Email of the user'),
-    'password': fields.String(required=True, description='Password of the user'),
-    'place_list': fields.List(fields.String, description='List of places owned by the user')
+    'email': fields.String(required=True, description='Email of the user', pattern=r'^\S+@\S+\.\S+$'),
 })
 
 # Create new user or list users
@@ -29,13 +26,13 @@ class UserList(Resource):
             new_user = facade.create_user(user_data)
         except ValueError:
             return {'error': 'Invalid input data'}, 400
-        return {**new_user.to_dict(), 'place_list': new_user.place_list}, 201
+        return new_user, 201
     
     @api.response(200, 'User list retrieved')
     def get(self):
         """Retrieve all users"""
         users = facade.get_all_users()
-        return [{**user.to_dict(), 'place_list': user.place_list} for user in users], 200
+        return users, 200
 
 # Retrieve, update, or delete a specific user
 @api.route('/<user_id>')
@@ -47,7 +44,7 @@ class UserResource(Resource):
         user = facade.get_user(user_id)
         if not user:
             return {'error': 'User not found'}, 404
-        return {**user.to_dict(), 'place_list': user.place_list}, 200
+        return user, 200
     
     @api.response(200, 'User updated successfully')
     @api.response(404, 'User not found')
@@ -58,7 +55,7 @@ class UserResource(Resource):
         user = facade.update_user(user_id, updated_data)
         if not user:
             return {'error': 'User not found'}, 404
-        return {**user.to_dict(), 'place_list': user.place_list}, 200
+        return user, 200
     
     @api.response(200, 'User deleted successfully')
     @api.response(404, 'User not found')

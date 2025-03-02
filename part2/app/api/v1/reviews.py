@@ -1,7 +1,6 @@
 from flask_restx import Namespace, Resource, fields
-from app.services.facade import HBnBFacade
+from app.services import facade
 
-facade = HBnBFacade()
 api = Namespace('reviews', description='Review operations')
 
 # Define the review model for input validation and documentation
@@ -14,7 +13,7 @@ review_model = api.model('Review', {
 
 @api.route('/')
 class ReviewList(Resource):
-    @api.expect(review_model)
+    @api.expect(review_model, validate=True)
     @api.response(201, 'Review successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
@@ -24,28 +23,13 @@ class ReviewList(Resource):
         if not new_review:
             return {'error': 'Invalid input data'}, 400
         
-        return {
-            'id': new_review.id,
-            'text': new_review.text,
-            'rating': new_review.rating,
-            'user_id': new_review.user_id,
-            'place_id': new_review.place_id
-        }, 201
+        return new_review, 201
 
     @api.response(200, 'List of reviews retrieved successfully')
     def get(self):
         """Retrieve a list of all reviews"""
         reviews = facade.get_all_reviews()
-        return [
-            {
-                'id': review.id,
-                'text': review.text,
-                'rating': review.rating,
-                'user_id': review.user_id,
-                'place_id': review.place_id
-            }
-            for review in reviews
-        ], 200
+        return reviews, 200
 
 
 @api.route('/<review_id>')
@@ -57,13 +41,7 @@ class ReviewResource(Resource):
         review = facade.get_review(review_id)
         if not review:
             return {'error': 'Review not found'}, 404
-        return {
-            'id': review.id,
-            'text': review.text,
-            'rating': review.rating,
-            'user_id': review.user_id,
-            'place_id': review.place_id
-        }, 200
+        return review, 200
 
     @api.expect(review_model)
     @api.response(200, 'Review updated successfully')
@@ -76,13 +54,7 @@ class ReviewResource(Resource):
         if not updated_review:
             return {'error': 'Review not found or invalid data'}, 404
         
-        return {
-            'id': updated_review.id,
-            'text': updated_review.text,
-            'rating': updated_review.rating,
-            'user_id': updated_review.user_id,
-            'place_id': updated_review.place_id
-        }, 200
+        return updated_review, 200
 
     @api.response(200, 'Review deleted successfully')
     @api.response(404, 'Review not found')
@@ -94,6 +66,7 @@ class ReviewResource(Resource):
         return {'message': 'Review deleted successfully'}, 200
 
 
+# to fix
 @api.route('/places/<place_id>/reviews')
 class PlaceReviewList(Resource):
     @api.response(200, 'List of reviews for the place retrieved successfully')
@@ -103,13 +76,4 @@ class PlaceReviewList(Resource):
         reviews = facade.get_reviews_by_place(place_id)
         if not reviews:
             return {'error': 'No reviews found for this place'}, 404
-        return [
-            {
-                'id': review.id,
-                'text': review.text,
-                'rating': review.rating,
-                'user_id': review.user_id,
-                'place_id': review.place_id
-            }
-            for review in reviews
-        ], 200
+        return reviews, 200

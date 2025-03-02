@@ -6,9 +6,38 @@ b) Include instructions on how to install dependencies and run the application.
 
 INSTRUCTIONS HERE:
 - To install the dependencies using:
+```
 pip install -r requirements.txt
+```
+
 Test the Initial Setup
 
+- To check the available endpoints
+```
+flask routes
+```
+
 - To run the application to ensure everything is set up correctly:
-python run.py
-------------------------------------------------------------------------------
+```
+flask run
+```
+The app will be running on: `http://localhost:5000`
+
+You can interact with the endpoints on: `http://localhost:5000/api/v1/`
+
+# API Endpoints
+
+| Endpoint                    | Methods           | Rule                              |
+|-----------------------------|-------------------|-----------------------------------|
+| amenities_amenity_list      | GET, POST         | /api/v1/amenities/                |
+| amenities_amenity_resource  | DELETE, GET, PUT  | /api/v1/amenities/<amenity_id>    |
+| doc                         | GET               | /api/v1/                          |
+| places_place_list           | GET, POST         | /api/v1/places/                   |
+| places_place_resource       | DELETE, GET, PUT  | /api/v1/places/<place_id>         |
+| reviews_place_review_list   | GET               | /api/v1/reviews/places/<place_id> |
+| reviews_review_list         | GET, POST         | /api/v1/reviews/                  |
+| reviews_review_resource     | DELETE, GET, PUT  | /api/v1/reviews/<review_id>       |
+| users_user_list             | GET, POST         | /api/v1/users/                    |
+| users_user_resource         | DELETE, GET, PUT  | /api/v1/users/<user_id>           |
+
+--------------------------------------------------------------------------

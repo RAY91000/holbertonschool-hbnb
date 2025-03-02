@@ -1,23 +1,25 @@
-# TASK 0 (Requirement included on the task 0 for the README file):
+## TASK 0 (Requirement included on the task 0 for the README file):
 In the README.md file, write a brief overview of the project setup:
 a) Describe the purpose of each directory and file.
 b) Include instructions on how to install dependencies and run the application.
 
 
-INSTRUCTIONS HERE:
-- To install the dependencies using:
+### Instructions
+
+#### Dependencies
+To install the dependencies (flask and the REST extension) use:
 ```
 pip install -r requirements.txt
 ```
 
-Test the Initial Setup
+#### Test the Initial Setup
 
-- To check the available endpoints
+To check the available endpoints
 ```
 flask routes
 ```
 
-- To run the application to ensure everything is set up correctly:
+To run the application to ensure everything is set up correctly:
 ```
 flask run
 ```
@@ -25,7 +27,14 @@ The app will be running on: `http://localhost:5000`
 
 You can interact with the endpoints on: `http://localhost:5000/api/v1/`
 
-# API Endpoints
+#### Running tests
+How to run the tests (be sure you are inside part2 directory):
+```
+pytest
+```
+
+
+### API Endpoints
 
 | Endpoint                    | Methods           | Rule                              |
 |-----------------------------|-------------------|-----------------------------------|

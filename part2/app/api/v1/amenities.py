@@ -1,12 +1,11 @@
 from flask_restx import Namespace, Resource, fields
-from app.services import HBnBFacade
+from app.services import facade
 
 api = Namespace('amenities', description='Amenity operations')
 
 # Define the amenity model for input validation and documentation
 amenity_model = api.model('Amenity', {
     'name': fields.String(required=True, description='Name of the amenity'),
-    'description': fields.String(required=True, description='Description of the amenity')
 })
 
 @api.route('/')
@@ -24,19 +23,13 @@ class AmenityList(Resource):
         Handles the POST request to create a new amenity.
         """
         amenity_data = api.payload
-        
-        # Validate input
-        if not amenity_data:
-            return {'message': 'Invalid input data'}, 400
-        
-        # Create the new amenity using facade service
-        new_amenity = facade.create_amenity(amenity_data)
-        
-        return {
-            'id': new_amenity.id,
-            'name': new_amenity.name,
-            'description': new_amenity.description
-        }, 201
+
+        try:
+            new_amenity = facade.create_amenity(amenity_data)
+        except ValueError:
+            return {'error': 'Invalid input data'}, 400
+
+        return new_amenity, 201
 
     @api.response(200, 'List of amenities retrieved successfully')
     def get(self):
@@ -49,37 +42,25 @@ class AmenityList(Resource):
         if not amenities:
             return {'error': 'No amenities found'}, 404
         
-        return [
-            {
-                'id': amenity.id,
-                'name': amenity.name,
-                'description': amenity.description
-            } for amenity in amenities
-        ], 200
+        return amenities, 200
 
 @api.route('/<amenity_id>')
 class AmenityResource(Resource):
     """
     Handles operations on a specific amenity identified by amenity_id.
     """
-
     @api.response(200, 'Amenity details retrieved successfully')
     @api.response(404, 'Amenity not found')
     def get(self, amenity_id):
         """
         Get amenity details by ID.
-        Handles the GET request to fetch details of a specific amenity by its ID.
         """
         amenity = facade.get_amenity(amenity_id)
         
         if not amenity:
             return {'error': 'Amenity not found'}, 404
         
-        return {
-            'id': amenity.id,
-            'name': amenity.name,
-            'description': amenity.description
-        }, 200
+        return amenity, 200
 
     @api.expect(amenity_model)
     @api.response(200, 'Amenity updated successfully')
@@ -100,11 +81,7 @@ class AmenityResource(Resource):
         if not updated_amenity:
             return {'error': 'Amenity not found'}, 404
         
-        return {
-            'id': updated_amenity.id,
-            'name': updated_amenity.name,
-            'description': updated_amenity.description
-        }, 200
+        return updated_amenity, 200
 
     @api.response(200, 'Amenity successfully deleted')
     @api.response(404, 'Amenity not found')

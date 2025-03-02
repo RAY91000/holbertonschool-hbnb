@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from app.services.facade import HBnBFacade
+from app.services import facade
 
 api = Namespace('places', description='Place operations')
 
@@ -33,14 +33,11 @@ place_model = api.model('Place', {
     'longitude': fields.Float(required=True, description='Longitude'),
     'owner_id': fields.String(required=True, description='Owner ID'),
     'amenities': fields.List(fields.String, required=True, description="Amenities IDs"),
-    'reviews': fields.List(fields.Nested(review_model), description="List of reviews")  # Ajout des reviews
 })
-
-facade = HBnBFacade()
 
 @api.route('/')
 class PlaceList(Resource):
-    @api.expect(place_model)
+    @api.expect(place_model, validate=True)
     @api.response(201, 'Place created')
     @api.response(400, 'Invalid data')
     def post(self):
@@ -49,13 +46,13 @@ class PlaceList(Resource):
         if not place_data:
             return {'message': 'Invalid data'}, 400
         new_place = facade.create_place(place_data)
-        return {**new_place.to_dict(), "id": new_place.id}, 201
+        return new_place, 201
 
     @api.response(200, 'Places list')
     def get(self):
         """Retrieve all places"""
         places = facade.get_all_places()
-        return [{'id': place.id, 'title': place.title, 'latitude': place.latitude, 'longitude': place.longitude} for place in places], 200
+        return places, 200
 
 @api.route('/<place_id>')
 class PlaceResource(Resource):
@@ -67,19 +64,10 @@ class PlaceResource(Resource):
         if not place:
             return {'message': 'Not found'}, 404
         
-        # retieve reviews associated with the location
+        # retrieve reviews associated with the location
         reviews = facade.get_reviews_by_place(place_id)
-        place_data = place.to_dict()
-        place_data['reviews'] = [
-            {
-                'id': review.id,
-                'text': review.text,
-                'rating': review.rating,
-                'user_id': review.user_id
-            }
-            for review in reviews
-        ]
-        return place_data, 200
+        place['reviews'] = reviews
+        return place, 200
 
     @api.response(200, 'Place deleted')
     @api.response(404, 'Place not found')
@@ -102,5 +90,5 @@ class PlaceResource(Resource):
         updated_place = facade.update_place(place_id, place_data)
         if not updated_place:
             return {'message': 'Not found'}, 404
-        return updated_place.to_dict(), 200
+        return updated_place, 200
     

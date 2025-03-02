@@ -17,3 +17,15 @@ class BaseModel:
             if hasattr(self, key):
                 setattr(self, key, value)
         self.save()  # Update the updated_at timestamp
+    
+    def to_dict(self):
+        """Convert instance to dictionary"""
+        dictionary = {}
+        for key, value in self.__dict__.items():
+            if isinstance(value, datetime):
+                dictionary[key] = value.isoformat()
+            elif hasattr(value, 'to_dict'):
+                dictionary[key] = value.to_dict()
+            else:
+                dictionary[key] = value
+        return dictionary

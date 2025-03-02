@@ -66,8 +66,12 @@ class ReviewResource(Resource):
         return {'message': 'Review deleted successfully'}, 200
 
 
-# to fix
-@api.route('/places/<place_id>/reviews')
+# Impossible to have /api/v1/places/<place_id>/reviews
+# without changing the other routes and changing
+# the reviews namespace path (not the best practice)
+# or moving this to the places review could work to keep
+# @api.route('/places/<place_id>/reviews') as /api/v1/places/<place_id>/reviews
+@api.route('/places/<place_id>')
 class PlaceReviewList(Resource):
     @api.response(200, 'List of reviews for the place retrieved successfully')
     @api.response(404, 'Place not found')

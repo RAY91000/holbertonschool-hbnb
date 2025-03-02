@@ -161,7 +161,17 @@ class HBnBFacade:
     
     # to fix
     def get_reviews_by_place(self, place_id):
-        return [review.to_dict_with_ids() for review in self.review_repo.get_all() if review.place == place_id]
+        """Retrieve all reviews for a specific place"""
+        # Get all reviews from the repository
+        all_reviews = self.review_repo.get_all()
+        
+        # Filter reviews by place_id
+        reviews_by_place_id = [review for review in all_reviews if review.place == place_id]
+        
+        # Convert each review to a dictionary with IDs
+        reviews_by_place_id_dicts = [review.to_dict_with_ids() for review in reviews_by_place_id]
+        
+        return reviews_by_place_id_dicts
     
     def update_review(self, review_id, review_data):
         review = self.review_repo.get(review_id)

@@ -127,18 +127,18 @@ def test_delete_review(client, create_user, create_place):
     assert response.status_code == 200
     assert response.json["message"] == "Review deleted successfully"
 
-# def test_get_reviews_by_place(client, create_user, create_place):
-#     """Test retrieving all reviews for a specific place"""
-#     user_id = create_user("John", "Doe", "john.doe5111@example.com")
-#     place_id = create_place("Beautiful Apartment", "A nice place near the beach", 120.5, 48.8566, 2.3522, user_id)
-#     client.post('/api/v1/reviews/', json={
-#         "text": "Wow amazing!",
-#         "rating": 5,
-#         "user_id": user_id,
-#         "place_id": place_id
-#     })
-#     response = client.get(f'/api/v1/places/{place_id}/reviews')
-#     assert response.status_code == 200
-#     assert isinstance(response.json, list)
-#     assert len(response.json) > 0
-#     assert response.json[0]["place_id"] == place_id
+def test_get_reviews_by_place(client, create_user, create_place):
+    """Test retrieving all reviews for a specific place"""
+    user_id = create_user("John", "Doe", "john.doe5111@example.com")
+    place_id = create_place("Beautiful Apartment", "A nice place near the beach", 120.5, 48.8566, 2.3522, user_id)
+    client.post('/api/v1/reviews/', json={
+        "text": "Wow amazing!",
+        "rating": 5,
+        "user_id": user_id,
+        "place_id": place_id
+    })
+    response = client.get(f'/api/v1/reviews/places/{place_id}')
+    assert response.status_code == 200
+    assert isinstance(response.json, list)
+    assert len(response.json) > 0
+    assert response.json[0]["place_id"] == place_id

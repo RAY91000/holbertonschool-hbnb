@@ -24,6 +24,8 @@ class BaseModel:
         for key, value in self.__dict__.items():
             if isinstance(value, datetime):
                 dictionary[key] = value.isoformat()
+            elif isinstance(value, list):
+                dictionary[key] = [item.to_dict() if hasattr(item, 'to_dict') else item for item in value]
             elif hasattr(value, 'to_dict'):
                 dictionary[key] = value.to_dict()
             else:

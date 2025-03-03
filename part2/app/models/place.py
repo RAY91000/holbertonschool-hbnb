@@ -9,7 +9,7 @@ class Place(BaseModel):
         self.price = price
         self.latitude = latitude
         self.longitude = longitude
-        self.owner = owner
+        self.owner = owner # owner id for now
         self.reviews = []  # List to store related reviews ids
         self.amenities = []  # List to store related amenities ids
         self.created_at = datetime.now()

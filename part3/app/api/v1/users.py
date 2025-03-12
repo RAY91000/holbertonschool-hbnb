@@ -8,6 +8,7 @@ user_model = api.model('User', {
     'first_name': fields.String(required=True, description='First name of the user'),
     'last_name': fields.String(required=True, description='Last name of the user'),
     'email': fields.String(required=True, description='Email of the user', pattern=r'^\S+@\S+\.\S+$'),
+    'password': fields.String(required=True, description='Password for the user (will be hashed)', min_length=6)
 })
 
 # Create new user or list users

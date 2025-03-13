@@ -37,4 +37,7 @@ class ProtectedResource(Resource):
     def get(self):
         current_user_id = get_jwt_identity()
         claims = get_jwt()
-        return {'message': f'Hello, user {current_user_id["id"]}'}, 200
+        return {
+            'message': f'Hello, user {current_user_id}',
+            'is_admin': claims.get("is_admin", False)
+        }, 200

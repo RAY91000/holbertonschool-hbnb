@@ -21,11 +21,11 @@ class ReviewList(Resource):
         """Register a new review"""
         current_user = get_jwt_identity()
         review_data = api.payload
-        review_data['user_id'] = current_user['id']
+        review_data['user_id'] = current_user
         place = facade.get_place(review_data['place_id'])
         if not place:
             return {'error': 'Place not found'}, 404
-        if place.get('owner_id') == current_user['id']:
+        if place.get('owner_id') == current_user:
             return {'error': 'You cannot review your own place'}, 400
         reviews_for_place = facade.get_reviews_by_place(review_data['place_id'])
         if any(r['user_id'] == current_user['id'] for r in reviews_for_place):

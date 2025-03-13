@@ -57,7 +57,7 @@ class UserResource(Resource):
     def put(self, user_id):
         """Update user details"""
         current_user = get_jwt_identity()
-        if current_user['id'] != user_id:
+        if current_user != user_id:
             return {'error': 'Unauthorized action'}, 403
         updated_data = api.payload
         # Prevent modifications to email and password via this endpoint
@@ -75,7 +75,7 @@ class UserResource(Resource):
     def delete(self, user_id):
         """Delete a user"""
         current_user = get_jwt_identity()
-        if current_user['id'] != user_id:
+        if current_user != user_id:
             return {'error': 'Unauthorized action'}, 403
         success = facade.delete_user(user_id)
         if success:

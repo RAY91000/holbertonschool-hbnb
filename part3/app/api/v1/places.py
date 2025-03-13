@@ -81,7 +81,7 @@ class PlaceResource(Resource):
         place = facade.get_place(place_id)
         if not place:
             return {'message': 'Not found'}, 404
-        if place['owner_id'] != current_user['id']:
+        if place['owner_id'] != current_user:
             return {'error': 'Unauthorized action'}, 403
         success = facade.delete_place(place_id)
         if success:
@@ -99,7 +99,7 @@ class PlaceResource(Resource):
         place = facade.get_place(place_id)
         if not place:
             return {'message': 'Not found'}, 404
-        if place['owner_id'] != current_user['id']:
+        if place['owner_id'] != current_user:
             return {'error': 'Unauthorized action'}, 403
         place_data = api.payload
         place_data['owner_id'] = current_user['id']

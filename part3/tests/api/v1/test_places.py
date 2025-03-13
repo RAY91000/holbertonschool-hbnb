@@ -24,7 +24,7 @@ def auth_header(client):
         "email": "test.user@example.com",
         "password": "testpassword"
     })
-    token = response.get_json()["access_token"]
+    token = response.get_json().get("access_token")
     return {"Authorization": f"Bearer {token}"}
 
 @pytest.fixture
@@ -74,6 +74,3 @@ def test_create_place(client, create_user, auth_header):
     assert "id" in data
     assert data["title"] == "Beautiful Apartment"
     assert data["owner_id"] == owner_id
-
-# Les autres tests pour GET, update, delete doivent également inclure headers=auth_header pour les endpoints protégés.
-

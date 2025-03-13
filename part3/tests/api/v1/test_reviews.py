@@ -24,7 +24,7 @@ def auth_header(client):
         "email": "test.user@example.com",
         "password": "testpassword"
     })
-    token = response.get_json()["access_token"]
+    token = response.get_json().get("access_token")
     return {"Authorization": f"Bearer {token}"}
 
 @pytest.fixture
@@ -58,7 +58,6 @@ def create_place(client, auth_header):
     return _create_place
 
 def test_create_review(client, create_user, create_place, auth_header):
-    # Create a user and a place (owner of the place will be a different user)
     owner_id = create_user("Owner", "Place", "owner@example.com", password="ownerpass")
     reviewer_id = create_user("Reviewer", "User", "reviewer@example.com", password="reviewpass")
     # Connect as reviewer
@@ -66,11 +65,9 @@ def test_create_review(client, create_user, create_place, auth_header):
         "email": "reviewer@example.com",
         "password": "reviewpass"
     })
-    reviewer_token = response_login.get_json()["access_token"]
+    reviewer_token = response_login.get_json().get("access_token")
     reviewer_header = {"Authorization": f"Bearer {reviewer_token}"}
-    # Create a place with owner_id
     place_id = create_place("Beautiful Apartment", "A nice place near the beach", 120.5, 48.8566, 2.3522, owner_id)
-    # Reviewer creates a review
     response = client.post('/api/v1/reviews/', json={
         "text": "Wow amazing!",
         "rating": 5,
@@ -80,5 +77,3 @@ def test_create_review(client, create_user, create_place, auth_header):
     data = response.get_json()
     assert "id" in data
     assert data["text"] == "Wow amazing!"
-
-# Les autres tests de reviews (update, delete) doivent inclure des vérifications d'ownership via auth_header.

@@ -23,7 +23,7 @@ def auth_header(client):
         "email": "test.user@example.com",
         "password": "testpassword"
     })
-    token = response.get_json()["access_token"]
+    token = response.get_json().get("access_token")
     return {"Authorization": f"Bearer {token}"}
 
 @pytest.fixture
@@ -55,17 +55,15 @@ def test_create_user(client):
 
 def test_update_user(client, create_user, auth_header):
     user_id = create_user("Bob", "Brown", "bob@example.com", password="bobpassword")
-    # Connect as this user
     response_login = client.post('/api/v1/auth/login', json={
         "email": "bob@example.com",
         "password": "bobpassword"
     })
-    token = response_login.get_json()["access_token"]
+    token = response_login.get_json().get("access_token")
     user_header = {"Authorization": f"Bearer {token}"}
     response = client.put(f'/api/v1/users/{user_id}', json={
         "first_name": "Robert",
         "last_name": "Brown",
-        "email": "bob@example.com"
     }, headers=user_header)
     assert response.status_code == 200
     data = response.get_json()
@@ -77,7 +75,7 @@ def test_delete_user(client, create_user, auth_header):
         "email": "charlie@example.com",
         "password": "charliepass"
     })
-    token = response_login.get_json()["access_token"]
+    token = response_login.get_json().get("access_token")
     user_header = {"Authorization": f"Bearer {token}"}
     response = client.delete(f'/api/v1/users/{user_id}', headers=user_header)
     assert response.status_code == 200
@@ -85,4 +83,3 @@ def test_delete_user(client, create_user, auth_header):
     assert data["message"] == "User deleted successfully"
     response = client.get(f'/api/v1/users/{user_id}')
     assert response.status_code == 404
-

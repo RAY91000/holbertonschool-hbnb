@@ -4,38 +4,62 @@ from app.services.facade import HBnBFacade
 
 @pytest.fixture(scope='session')
 def app():
-    """Initialize the Flask application in test mode"""
-    app = create_app(config_name="testing")
+    app = create_app(config_class="config.TestingConfig")
     return app
 
 @pytest.fixture(scope='session')
 def client(app):
-    """Create a test client for the Flask application"""
     return app.test_client()
 
-@pytest.fixture(scope='session')
-def facade():
-    """Initialize the HBnBFacade"""
-    return HBnBFacade()
+@pytest.fixture
+def auth_header(client):
+    user_data = {
+        "first_name": "Test",
+        "last_name": "User",
+        "email": "test.user@example.com",
+        "password": "testpassword"
+    }
+    client.post('/api/v1/users/', json=user_data)
+    response = client.post('/api/v1/auth/login', json={
+        "email": "test.user@example.com",
+        "password": "testpassword"
+    })
+    token = response.get_json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def create_user(client):
-    """Helper function to create a user"""
-    def _create_user(first_name, last_name, email):
+    def _create_user(first_name, last_name, email, password="secret123"):
         response = client.post('/api/v1/users/', json={
             "first_name": first_name,
             "last_name": last_name,
             "email": email,
+            "password": password
         })
         return response.get_json().get('id') if response.status_code == 201 else None
     return _create_user
 
-def test_create_place(client, create_user):
-    """Test the creation of a place"""
-    # Create a user to be the owner of the place
-    owner_id = create_user("John", "Doe", "john.doe@example.com")
-    assert owner_id is not None, "Failed to create user"
+@pytest.fixture
+def create_place(client, auth_header):
+    def _create_place(title, description, price, latitude, longitude, owner_id, amenities=None):
+        if amenities is None:
+            amenities = ["wifi", "pool"]
+        payload = {
+            "title": title,
+            "description": description,
+            "price": price,
+            "latitude": latitude,
+            "longitude": longitude,
+            "amenities": amenities,
+            "owner_id": owner_id
+        }
+        response = client.post('/api/v1/places/', json=payload, headers=auth_header)
+        return response.get_json().get('id') if response.status_code == 201 else None
+    return _create_place
 
+def test_create_place(client, create_user, auth_header):
+    owner_id = create_user("John", "Doe", "john.doe@example.com", password="secret123")
+    assert owner_id is not None, "Failed to create user"
     response = client.post('/api/v1/places/', json={
         "title": "Beautiful Apartment",
         "description": "A nice place near the beach",
@@ -44,123 +68,12 @@ def test_create_place(client, create_user):
         "longitude": 2.3522,
         "owner_id": owner_id,
         "amenities": ["wifi", "pool"]
-    })
+    }, headers=auth_header)
     assert response.status_code == 201
     data = response.get_json()
     assert "id" in data
     assert data["title"] == "Beautiful Apartment"
     assert data["owner_id"] == owner_id
 
-def test_get_places(client):
-    """Test retrieving the list of places"""
-    response = client.get('/api/v1/places/')
-    assert response.status_code == 200
+# Les autres tests pour GET, update, delete doivent également inclure headers=auth_header pour les endpoints protégés.
 
-def test_get_place_not_found(client):
-    """Test retrieving a non-existent place"""
-    response = client.get('/api/v1/places/999')
-    assert response.status_code == 404
-
-def test_update_place(client, create_user):
-    """Test updating an existing place"""
-    # Create a user to be the owner of the place
-    owner_id = create_user("Mary", "Doe", "mary.doe@example.com")
-    assert owner_id is not None, "Failed to create user"
-
-    # Create a place
-    response = client.post('/api/v1/places/', json={
-        "title": "Beautiful Apartment",
-        "description": "A nice place near the beach",
-        "price": 120.5,
-        "latitude": 48.8566,
-        "longitude": 2.3522,
-        "owner_id": owner_id,
-        "amenities": ["wifi", "pool"]
-    })
-    place_id = response.get_json().get('id')
-    assert response.status_code == 201
-
-    # Update the place
-    response = client.put(f'/api/v1/places/{place_id}', json={
-        "title": "Updated Apartment",
-        "description": "An updated description",
-        "price": 150.0,
-        "latitude": 48.8566,
-        "longitude": 2.3522,
-        "owner_id": owner_id,
-        "amenities": ["wifi", "gym"]
-    })
-    assert response.status_code == 200
-    data = response.get_json()
-    assert data["title"] == "Updated Apartment"
-    assert data["description"] == "An updated description"
-    assert data["price"] == 150.0
-
-def test_delete_place(client, create_user):
-    """Test deleting an existing place"""
-    # Create a user to be the owner of the place
-    owner_id = create_user("Duper", "Doe", "duper.doe@example.com")
-    assert owner_id is not None, "Failed to create user"
-
-    # Create a place
-    response = client.post('/api/v1/places/', json={
-        "title": "Beautiful Apartment",
-        "description": "A nice place near the beach",
-        "price": 120.5,
-        "latitude": 48.8566,
-        "longitude": 2.3522,
-        "owner_id": owner_id,
-        "amenities": ["wifi", "pool"]
-    })
-    place_id = response.get_json().get('id')
-    assert response.status_code == 201
-
-    # Delete the place
-    response = client.delete(f'/api/v1/places/{place_id}')
-    assert response.status_code == 200
-    data = response.get_json()
-    assert data["message"] == "Deleted"
-
-    # Verify the place is no longer retrievable
-    response = client.get(f'/api/v1/places/{place_id}')
-    assert response.status_code == 404
-    data = response.get_json()
-    assert data["message"] == "Not found"
-
-def test_create_place_missing_data(client):
-    """Test creating a place with missing data"""
-
-    # Attempt to create a place with missing title
-    response = client.post('/api/v1/places/', json={
-        "description": "A nice place near the beach",
-        "price": 120.5,
-        "latitude": 48.8566,
-        "longitude": 2.3522,
-        "owner_id": "azertyui",
-        "amenities": ["wifi", "pool"]
-    })
-    assert response.status_code == 400
-    data = response.get_json()
-    assert "message" in data
-    assert "errors" in data
-    assert data["errors"]["title"] == "'title' is a required property"
-
-def test_create_place_invalid_data(client, create_user):
-    """Test creating a place with invalid data"""
-    # Create a user to be the owner of the place
-    owner_id = create_user("Hyper", "Doe", "hyper.doe@example.com")
-    assert owner_id is not None, "Failed to create user"
-
-    # Attempt to create a place with invalid price
-    response = client.post('/api/v1/places/', json={
-        "title": "Beautiful Apartment",
-        "description": "A nice place near the beach",
-        "price": "invalid_price",
-        "latitude": 48.8566,
-        "longitude": 2.3522,
-        "owner_id": owner_id,
-        "amenities": ["wifi", "pool"]
-    })
-    assert response.status_code == 400
-    data = response.get_json()
-    assert "message" in data

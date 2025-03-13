@@ -3,7 +3,7 @@ from app.models.user import User
 from app.models.review import Review
 
 def test_place_creation():
-    owner = User(first_name="Alice", last_name="Smith", email="alice.smith@example.com")
+    owner = User(first_name="Alice", last_name="Smith", email="alice.smith@example.com", password="testpassword")
     place = Place(title="Cozy Apartment", description="A nice place to stay", price=100, latitude=37.7749, longitude=-122.4194, owner=owner)
 
     # Adding a review

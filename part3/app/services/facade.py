@@ -22,8 +22,7 @@ class HBnBFacade:
         return user.to_dict() if user else None
     
     def get_user_by_email(self, email):
-        user = self.user_repo.get_by_attribute("email", email)
-        return user.to_dict() if user else None
+        return self.user_repo.get_by_attribute("email", email)
 
     def get_all_users(self):
         return [user.to_dict() for user in self.user_repo.get_all()]

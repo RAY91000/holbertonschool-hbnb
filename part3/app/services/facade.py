@@ -43,6 +43,8 @@ class HBnBFacade:
     # ----- Place Methods -----
     def create_place(self, place_data):
         owner_id = place_data.pop('owner_id')
+        if not owner_id:
+            raise ValueError("Owner not found")
         amenities_ids = place_data.pop('amenities', [])
 
         owner = self.user_repo.get(owner_id)
@@ -54,7 +56,7 @@ class HBnBFacade:
         place_data_without_owner_id = {k: v for k, v in place_data.items() if k != 'owner_id'}
 
         
-        place = Place(owner=owner_id, **place_data_without_owner_id)
+        place = Place(owner=owner_id, **place_data)
         self.place_repo.add(place)
         
         # Add amenities to the place

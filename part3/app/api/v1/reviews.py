@@ -65,7 +65,7 @@ class ReviewResource(Resource):
         review = facade.get_review(review_id)
         if not review:
             return {'error': 'Review not found'}, 404
-        if review['user_id'] != current_user['id']:
+        if review['user_id'] != current_user:
             return {'error': 'Unauthorized action'}, 403
         review_data = api.payload
         updated_review = facade.update_review(review_id, review_data)
@@ -83,7 +83,7 @@ class ReviewResource(Resource):
         review = facade.get_review(review_id)
         if not review:
             return {'error': 'Review not found'}, 404
-        if review['user_id'] != current_user['id']:
+        if review['user_id'] != current_user:
             return {'error': 'Unauthorized action'}, 403
         success = facade.delete_review(review_id)
         if not success:

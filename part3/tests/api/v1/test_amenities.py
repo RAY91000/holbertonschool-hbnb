@@ -4,7 +4,7 @@ from app import create_app
 @pytest.fixture
 def app():
     """Initialize the Flask application in test mode"""
-    app = create_app(config_name="testing")
+    app = create_app(config_class="config.TestingConfig")
     return app
 
 @pytest.fixture
@@ -37,7 +37,6 @@ def test_create_amenity_fail_missing_data(client):
     response = client.post('/api/v1/amenities/', json={})
     assert response.status_code == 400
     data = response.get_json()
-    data = response.get_json()
     assert "error" in data
     assert data["error"] == "Invalid input data"
 
@@ -58,14 +57,12 @@ def test_get_amenities(client, create_amenity):
     data = response.get_json()
     assert isinstance(data, list)
     pool = next((amenity for amenity in data if amenity["name"] == "Pool"), None)
-
     expected_amenity = {
         "id": amenity_id,
         "name": "Pool",
-        "created_at": pool["created_at"],  # Use the actual timestamp from the response
-        "updated_at": pool["updated_at"]   # Use the actual timestamp from the response
+        "created_at": pool["created_at"],
+        "updated_at": pool["updated_at"]
     }
-
     assert pool is not None
     assert pool == expected_amenity
 
@@ -79,18 +76,13 @@ def test_get_non_existent_amenity(client):
 
 def test_update_amenity(client, create_amenity):
     """Test updating an existing amenity"""
-    # Create an amenity
     amenity_id = create_amenity("Gym")
-
-    # Update the amenity
     response = client.put(f'/api/v1/amenities/{amenity_id}', json={
         "name": "Fitness Center"
     })
     assert response.status_code == 200
     data = response.get_json()
     assert data["name"] == "Fitness Center"
-
-    # Verify the amenity was updated
     response = client.get(f'/api/v1/amenities/{amenity_id}')
     assert response.status_code == 200
     data = response.get_json()
@@ -108,18 +100,12 @@ def test_update_non_existent_amenity(client):
 
 def test_delete_amenity(client, create_amenity):
     """Test deleting an existing amenity"""
-    # Create an amenity
     amenity_id = create_amenity("Sauna")
-
-    # Delete the amenity
     response = client.delete(f'/api/v1/amenities/{amenity_id}')
     assert response.status_code == 200
     data = response.get_json()
     assert data["message"] == "Amenity deleted successfully"
-
-    # Verify the amenity is no longer retrievable
     response = client.get(f'/api/v1/amenities/{amenity_id}')
     assert response.status_code == 404
     data = response.get_json()
     assert data["error"] == "Amenity not found"
-

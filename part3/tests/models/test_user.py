@@ -1,7 +1,7 @@
 from app.models.user import User
 
 def test_user_creation():
-    user = User(first_name="John", last_name="Doe", email="john.doe@example.com")
+    user = User(first_name="John", last_name="Doe", email="john.doe@example.com", password="testpassword")
     assert user.first_name == "John"
     assert user.last_name == "Doe"
     assert user.email == "john.doe@example.com"
@@ -11,7 +11,7 @@ def test_user_creation():
 test_user_creation()
 
 def test_admin_user_creation():
-    user = User(first_name="John", last_name="Doe", email="john.doe.admin@example.com", is_admin=True)
+    user = User(first_name="John", last_name="Doe", email="john.doe.admin@example.com", password="adminpassword", is_admin=True)
     assert user.first_name == "John"
     assert user.last_name == "Doe"
     assert user.email == "john.doe.admin@example.com"

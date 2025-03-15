@@ -3,27 +3,28 @@ from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
 from app.models.review import Review
+from app.persistence.repository import SQLAlchemyRepository
 
 class HBnBFacade:
     def __init__(self):
+        self.user_repo = SQLAlchemyRepository(User)
         self.user_repo = InMemoryRepository()
         self.place_repo = InMemoryRepository()
         self.review_repo = InMemoryRepository()
         self.amenity_repo = InMemoryRepository()
 
     # ----- User Methods -----
+
     def create_user(self, user_data):
         user = User(**user_data)
         self.user_repo.add(user)
-        return user.to_dict()
+        return user
 
     def get_user(self, user_id):
-        user = self.user_repo.get(user_id)
-        return user.to_dict() if user else None
+        return self.user_repo.get(user_id)
     
     def get_user_by_email(self, email):
-        user = self.user_repo.get_by_attribute("email", email)
-        return user.to_dict() if user else None
+        return self.user_repo.get_by_attribute("email", email)
 
     def get_all_users(self):
         return [user.to_dict() for user in self.user_repo.get_all()]
@@ -44,6 +45,8 @@ class HBnBFacade:
     # ----- Place Methods -----
     def create_place(self, place_data):
         owner_id = place_data.pop('owner_id')
+        if not owner_id:
+            raise ValueError("Owner not found")
         amenities_ids = place_data.pop('amenities', [])
 
         owner = self.user_repo.get(owner_id)
@@ -55,7 +58,7 @@ class HBnBFacade:
         place_data_without_owner_id = {k: v for k, v in place_data.items() if k != 'owner_id'}
 
         
-        place = Place(owner=owner_id, **place_data_without_owner_id)
+        place = Place(owner=owner_id, **place_data)
         self.place_repo.add(place)
         
         # Add amenities to the place

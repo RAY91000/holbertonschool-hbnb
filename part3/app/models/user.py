@@ -1,9 +1,12 @@
 from datetime import datetime
 from .base_model import BaseModel
+<<<<<<< HEAD
 from app.persistence.repository import inMemoryRepository as database
 from flask_bcrypt import bcrypt
 bcrypt = Bcrypt()
 import uuid
+=======
+>>>>>>> 5b2692a01f2ba9ee7c54a7447ed8a7fa46021032
 
 class User(BaseModel):
     def __init__(self, first_name, last_name, email, password, is_admin=False):
@@ -18,9 +21,11 @@ class User(BaseModel):
         self.validate_user()
 
     def hash_password(self, password):
+        from app import bcrypt
         self.password = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def verify_password(self, password):
+        from app import bcrypt
         return bcrypt.check_password_hash(self.password, password)
 
     def validate_user(self):

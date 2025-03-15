@@ -32,7 +32,6 @@ place_model = api.model('Place', {
     'price': fields.Float(required=True, description='Price per night'),
     'latitude': fields.Float(required=True, description='Latitude'),
     'longitude': fields.Float(required=True, description='Longitude'),
-    'owner_id': fields.String(required=True, description='Owner ID'),
     'amenities': fields.List(fields.String, required=True, description="Amenities IDs"),
 })
 
@@ -48,6 +47,7 @@ class PlaceList(Resource):
         place_data = api.payload
         if not place_data:
             return {'message': 'Invalid data'}, 400
+        place_data['owner_id'] = current_user
         new_place = facade.create_place(place_data)
         return new_place, 201
 
@@ -81,7 +81,7 @@ class PlaceResource(Resource):
         place = facade.get_place(place_id)
         if not place:
             return {'message': 'Not found'}, 404
-        if place['owner_id'] != current_user['id']:
+        if place['owner_id'] != current_user:
             return {'error': 'Unauthorized action'}, 403
         success = facade.delete_place(place_id)
         if success:
@@ -99,7 +99,7 @@ class PlaceResource(Resource):
         place = facade.get_place(place_id)
         if not place:
             return {'message': 'Not found'}, 404
-        if place['owner_id'] != current_user['id']:
+        if place['owner_id'] != current_user:
             return {'error': 'Unauthorized action'}, 403
         place_data = api.payload
         place_data['owner_id'] = current_user['id']

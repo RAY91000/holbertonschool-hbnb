@@ -1,5 +1,8 @@
 from sqlalchemy.orm import Session
 from app.models.user import User
+from app.models.place import Place
+from app.models.review import Review
+from app.models.amenity import Amenity
 
 class UserRepository:
     def __init__(self, db_session: Session):
@@ -34,4 +37,15 @@ class UserRepository:
             self.db_session.commit()
             return True
         return False
+
+    def get_user_places(self, user_id: str):
+        return self.db_session.query(Place).filter(Place.owner_id == user_id).all()
+
+    def get_user_reviews(self, user_id: str):
+        return self.db_session.query(Review).filter(Review.user_id == user_id).all()
+
+    def get_user_amenities(self, user_id: str):
+        return self.db_session.query(Amenity).join(
+            Place.amenities
+        ).filter(Place.owner_id == user_id).all()
 
